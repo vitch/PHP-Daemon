@@ -266,12 +266,12 @@ abstract class Core_Daemon
 	 */
 	private function init()
 	{
-		// Run the per-daemon setup 
-		$this->setup();		
-			
 		// Setup any registered plugins
 		foreach($this->plugins as $plugin)
 			$this->{$plugin}->setup();
+		
+		// Run the per-daemon setup
+		$this->setup();
 			
 		// Set the initial lock and gracefully exit if another lock is detected
 		if ($lock = $this->lock->check())
