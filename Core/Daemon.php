@@ -120,6 +120,8 @@ abstract class Core_Daemon
 	 * @var Array
 	 */
 	private $plugins 	= array();
+
+	private $children = array();
 	
 	/**
 	 * This has to be set using the Core_Daemon::setFilename before init. 
@@ -234,6 +236,9 @@ abstract class Core_Daemon
 			
 		if (function_exists('pcntl_fork') == false)
 			$errors[] = "The PCNTL Extension is Not Installed";
+
+		if (function_exists('posix_kill') == false)
+			$errors[] = "The POSIX Extension is Not Installed";
 	
 		if (version_compare(PHP_VERSION, '5.3.0') < 0)
 			$errors[] = "PHP 5.3 or Higher is Required";
@@ -290,6 +295,8 @@ abstract class Core_Daemon
 	
 	public function __destruct() 
 	{
+		$this->signal_children(SIGTERM);
+
 		foreach($this->plugins as $plugin)
 			$this->{$plugin}->teardown();		
 		
@@ -369,12 +376,15 @@ abstract class Core_Daemon
 				{
 					$this->log('Exception Caught from Callback: ' . $e->getMessage());
 				}
-				
+
+				// TODO: Need to tell the parent to stop watching this process?
+
 				exit;
             	break;    
                             
             default:
-            	// Parent Process
+            	// Parent Process - store the pid of the child so we can kill any long running processes if necessary
+				$this->children[] = $pid;
             	return true;
                 break;
         }
@@ -470,6 +480,7 @@ abstract class Core_Daemon
 	 */
     public function signal($signal) 
     {
+		$this->signal_children($signal);
 		switch ($signal)
 		{
         	case SIGUSR1:
@@ -493,7 +504,15 @@ abstract class Core_Daemon
 			default:
                 // handle all other signals
 		}
-    }	
+    }
+
+	private function signal_children($sig)
+	{
+		// TODO: Do we need to first check if the processes are still running?
+		foreach($this->children as $child_pid) {
+			posix_kill($child_pid, $sig);
+		}
+	}
 	
     /**
      * Get the fully qualified command used to start (and restart) the daemon
