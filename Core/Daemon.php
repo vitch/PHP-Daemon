@@ -398,29 +398,40 @@ abstract class Core_Daemon
 	{
 		static $handle = false;
 		static $raise_logfile_error = true;
+		static $last_logfile_name = '';
 		
 		try
 		{
-			$header	= "Date		   PID   Message\n";
+			$header	= "Date	               PID  Message\n";
 			$date 		= date("Y-m-d H:i:s");
 			$pid 		= str_pad($this->pid, 5, " ", STR_PAD_LEFT);
 			$prefix 	= "[$date] $pid";
-					
+			$logfile_name = $this->log_file();
+
+			// Rotate file if it is open but the desired name has changed (e.g. due to a date change)
+			if ($handle && $last_logfile_name !== $logfile_name) {
+				fclose($handle);
+				$handle = false;
+			}
+
+
 			if($handle === false)
 			{
-				if (strlen($this->log_file()) > 0)
-					$handle = @fopen($this->log_file(), 'a+');
+				if (strlen($logfile_name) > 0)
+					$handle = fopen($logfile_name, 'a+');
 			
 		   		if($handle === false) 
 		   	 	{
 					// If the log file can't be written-to, dump the errors to stdout with the explination...
 					if ($raise_logfile_error) {
 						$raise_logfile_error = false;
-						$this->log('Unable to write logfile at ' . $this->log_file() . '. Redirecting messages to stdout.');
+						$this->log('Unable to write logfile at ' . $logfile_name . '. Redirecting messages to stdout.');
 					}
 
 					throw new Exception("$prefix $message");
 				}
+
+				$last_logfile_name = $logfile_name;
 			
 				fwrite($handle, $header);
 				
