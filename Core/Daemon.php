@@ -8,9 +8,9 @@ declare(ticks = 5);
  * 
  * USAGE: 
  * 1. Implement the setup(), execute() and log_file() methods in your base class. 
- *    - setup() is called automaticaly after __construct() and init() are called, and can be called for you automatically after each ->fork(). 
- *    - execute() is called on whaveter timer you define when you set the loop_interval. 
- *    - log_file() should return the path that all log events will be written-to. Maybe use date('Ymd') to build a simple daily log rotator. 
+ *	- setup() is called automaticaly after __construct() and init() are called, and can be called for you automatically after each ->fork(). 
+ *	- execute() is called on whaveter timer you define when you set the loop_interval. 
+ *	- log_file() should return the path that all log events will be written-to. Maybe use date('Ymd') to build a simple daily log rotator. 
  * 
  * 2. In your constructor, call parent::__construct() and then set: 
  * 		lock				Several lock providers exist or write your own that extends Core_Lock_Lock. Used to prevent duplicate instances of the daemon. 
@@ -19,8 +19,8 @@ declare(ticks = 5);
  * 		email_distribution_list		An array of email addresses that will be alerted when falat errors occur 
  * 
  * 3. Configure any Plugins you want to use. For example, the /Plugins/Ini.php provides integrated, validated ini file loading. Functionality implemented as a plugin
- *    can add runtime checks that get called very early in the daemon startup. Much better to know that your config file (for example) is mangled during the check_environment
- *    call than it is to wait until you've got a running daemon that's trusted to remain error-free and functional.  
+ *	can add runtime checks that get called very early in the daemon startup. Much better to know that your config file (for example) is mangled during the check_environment
+ *	call than it is to wait until you've got a running daemon that's trusted to remain error-free and functional.  
  * 
  * @uses PHP 5.3 or Higher
  * @author Shane Harter
@@ -166,45 +166,45 @@ abstract class Core_Daemon
 	abstract protected function log_file();	
 	
 	
-    
-    /**
-     * Return an instance of the Core_Daemon signleton
-     * @return Core_Daemon
-     */
-    public static function getInstance()
-    {
-    	static $o = false;
-    	
-    	if ($o)
-    		return $o;
-    	
-    	try
-    	{
-    		$o = new static;
+	
+	/**
+	 * Return an instance of the Core_Daemon signleton
+	 * @return Core_Daemon
+	 */
+	public static function getInstance()
+	{
+		static $o = false;
+		
+		if ($o)
+			return $o;
+		
+		try
+		{
+			$o = new static;
 			$o->load_plugins();
-    		$o->check_environment();
-    		$o->init();
-    	}
-    	catch(Exception $e)
-    	{
-    		$o->fatal_error($e->getMessage());
-    	}
-    	
-    	return $o;
-    }
+			$o->check_environment();
+			$o->init();
+		}
+		catch(Exception $e)
+		{
+			$o->fatal_error($e->getMessage());
+		}
+		
+		return $o;
+	}
 
 	/**
-     * Set the current Filename wherein this object is being instantiated and run. 
-     * @param string $filename the acutal filename, pass in __file__
-     * @return void
-     */
-    public static function setFilename($filename)
-    {
-    	self::$filename = realpath($filename);
-    }    
+	 * Set the current Filename wherein this object is being instantiated and run. 
+	 * @param string $filename the acutal filename, pass in __file__
+	 * @return void
+	 */
+	public static function setFilename($filename)
+	{
+		self::$filename = realpath($filename);
+	}	
 
-    
-    
+	
+	
 	protected function __construct()
 	{
 		// We have to set any installaton instructions before we call getopt()
@@ -304,7 +304,7 @@ abstract class Core_Daemon
 		
 		if(!empty($this->pid_file) && file_exists($this->pid_file) && file_get_contents($this->pid_file) == $this->pid)
 			unlink($this->pid_file);
-    }
+	}
 
 	/**
 	 * This is the main program loop for the daemon
@@ -347,46 +347,46 @@ abstract class Core_Daemon
 	public function fork($callback, array $params = array(), $run_setup = false)
 	{
 		$pid = pcntl_fork();
-        switch($pid) 
-        {
-            case -1:
-            	$msg = 'Fork Request Failed. Uncalled Callback: ' . is_array($callback) ? implode('::', $callback) : $callback;
-                $this->log($msg, true);
-                return false;
-                break;
-                
-            case 0:
-				// Child Process
-				$this->is_parent = false;
-				$this->pid = getmypid();
-				
-				// Trunc the plugins array, so that way 
-				// when this fork dies and the __destruct runs, it will only shut down 
-				// plugins that were added to the fork explicitely in the setup() call below
-				$this->plugins = array();
-				
-				if ($run_setup) {
-					$this->log("Running Setup in forked PID " . $this->pid);
-					$this->setup();
-				}
-				
-				try
-				{
-					call_user_func_array($callback, $params);
-				}
-				catch(Exception $e)
-				{
-					$this->log('Exception Caught from Callback: ' . $e->getMessage());
-				}
-				
-				exit;
-            	break;    
-                            
-            default:
-            	// Parent Process
-            	return true;
-                break;
-        }
+		switch($pid)
+		{
+			case -1:
+				$msg = 'Fork Request Failed. Uncalled Callback: ' . is_array($callback) ? implode('::', $callback) : $callback;
+			$this->log($msg, true);
+			return false;
+			break;
+
+			case 0:
+					// Child Process
+					$this->is_parent = false;
+					$this->pid = getmypid();
+
+					// Trunc the plugins array, so that way
+					// when this fork dies and the __destruct runs, it will only shut down
+					// plugins that were added to the fork explicitely in the setup() call below
+					$this->plugins = array();
+
+					if ($run_setup) {
+						$this->log("Running Setup in forked PID " . $this->pid);
+						$this->setup();
+					}
+
+					try
+					{
+						call_user_func_array($callback, $params);
+					}
+					catch(Exception $e)
+					{
+						$this->log('Exception Caught from Callback: ' . $e->getMessage());
+					}
+
+					exit;
+				break;
+
+			default:
+				// Parent Process
+				return true;
+			break;
+		}
 	}	
 	
 	/**
@@ -401,47 +401,47 @@ abstract class Core_Daemon
 		
 		try
 		{
-			$header	= "Date                   PID   Message\n";
-		        $date 		= date("Y-m-d H:i:s");
+			$header	= "Date		   PID   Message\n";
+			$date 		= date("Y-m-d H:i:s");
 			$pid 		= str_pad($this->pid, 5, " ", STR_PAD_LEFT);
 			$prefix 	= "[$date] $pid";
-	        			
-        		if($handle === false)
-	        	{
-	        		if (strlen($this->log_file()) > 0)
+					
+			if($handle === false)
+			{
+				if (strlen($this->log_file()) > 0)
 					$handle = @fopen($this->log_file(), 'a+');
-	        	
-	           		if($handle === false) 
-	           	 	{
-	            			// If the log file can't be written-to, dump the errors to stdout with the explination... 
-	            			if ($raise_logfile_error) {
-	            				$raise_logfile_error = false;
-	            				$this->log('Unable to write logfile at ' . $this->log_file() . '. Redirecting messages to stdout.');
-		            		}
-	            	
-					throw new Exception("$prefix $message");	                
-	        	    	}
-	            
-	            		fwrite($handle, $header);
+			
+		   		if($handle === false) 
+		   	 	{
+					// If the log file can't be written-to, dump the errors to stdout with the explination...
+					if ($raise_logfile_error) {
+						$raise_logfile_error = false;
+						$this->log('Unable to write logfile at ' . $this->log_file() . '. Redirecting messages to stdout.');
+					}
+
+					throw new Exception("$prefix $message");
+				}
+			
+				fwrite($handle, $header);
 				
 				if ($this->verbose)
 					echo $header;
-	        	}
-	        
-		        $message = $prefix . ' ' . str_replace("\n", "\n$prefix ", trim($message)) . "\n";
-        	    	fwrite($handle, $message);
-            
-           		 if ($this->verbose)
-            			echo $message;
+			}
+		
+			$message = $prefix . ' ' . str_replace("\n", "\n$prefix ", trim($message)) . "\n";
+			fwrite($handle, $message);
+		
+	   		if ($this->verbose)
+				echo $message;
 		}
-	        catch(Exception $e)
+		catch(Exception $e)
 		{
-        		echo PHP_EOL . $e->getMessage();
-        	}
-        
+			echo PHP_EOL . $e->getMessage();
+		}
+	
 		// Optionally distribute this error message to anyboady on the ->email_distribution_list
 		if ($send_alert && $message)
-        		$this->send_alert($message);
+			$this->send_alert($message);
 	}
 	
 	/**
@@ -477,41 +477,41 @@ abstract class Core_Daemon
 	 * @param integer $signal
 	 * @return void
 	 */
-    public function signal($signal) 
-    {
+	public function signal($signal) 
+	{
 		switch ($signal)
 		{
-        	case SIGUSR1:
-        		// kill -10 [pid]
-        		$this->dump();
-        		break;
-        	case SIGHUP:
-        		// kill -1 [pid]
-        		$this->restart();
-        		break;
-			case SIGUSR2:
-			case SIGCONT:
+			case SIGUSR1:
+				// kill -10 [pid]
+				$this->dump();
 				break;
-				
-			case SIGINT:
-			case SIGTERM:
-            	$this->log("Shutdown Signal Received\n");
-                $this->shutdown = true;
-                break;
+			case SIGHUP:
+				// kill -1 [pid]
+				$this->restart();
+				break;
+				case SIGUSR2:
+				case SIGCONT:
+					break;
+
+				case SIGINT:
+				case SIGTERM:
+				$this->log("Shutdown Signal Received\n");
+				$this->shutdown = true;
+				break;
 
 			default:
-                // handle all other signals
+			// handle all other signals
 		}
-    }	
+	}	
 	
-    /**
-     * Get the fully qualified command used to start (and restart) the daemon
-     * 
-     * @return string
-     */
-    private function getFilename()
-    {
-    	$command = 'php ' . self::$filename . ' -d';
+	/**
+	 * Get the fully qualified command used to start (and restart) the daemon
+	 * 
+	 * @return string
+	 */
+	private function getFilename()
+	{
+		$command = 'php ' . self::$filename . ' -d';
 		
 		if ($this->pid_file)
 			$command .= ' -p ' . $this->pid_file;
@@ -520,45 +520,45 @@ abstract class Core_Daemon
 		$command .= ' > /dev/null';
 		
 		return $command;
-    }
-    
+	}
+	
 	/**
 	 * Register Signal Handlers
 	 * @return void
 	 */
-    private function register_signal_handlers() 
-    {
+	private function register_signal_handlers() 
+	{
 		pcntl_signal(SIGTERM, 	array($this, "signal"));
 		pcntl_signal(SIGINT, 	array($this, "signal"));
 		pcntl_signal(SIGUSR1, 	array($this, "signal"));
 		pcntl_signal(SIGUSR2, 	array($this, "signal"));
 		pcntl_signal(SIGCONT, 	array($this, "signal"));
 		pcntl_signal(SIGHUP, 	array($this, "signal"));
-    }
-    
-    /**
-     * This will dump various runtime details to the log. 
-     * @return void
-     */
-    private function dump()
-    {
-    	$x = array();
-    	$x[] = "Dump Signal Recieved";
-    	$x[] = "Loop Interval: " 	. $this->loop_interval;
-    	$x[] = "Restart Interval: " . $this->auto_restart_interval;
-    	$x[] = "Start Time: " 		. $this->start_time;
-    	$x[] = "Duration: " 		. $this->runtime();
-    	$x[] = "Log File: " 		. $this->log_file();
-    	$x[] = "Daemon Mode: " 		. (int)$this->daemon();
-    	$x[] = "Shutdown Signal: " 	. (int)$this->shutdown();
-    	$x[] = "Verbose Mode: " 	. (int)$this->verbose();
-    	$x[] = "Email On Error: " 	. implode(', ', $this->email_distribution_list);
-    	$x[] = "Loaded Plugins: " 	. implode(', ', $this->plugins);
-    	$x[] = "Memory Usage: " 	. memory_get_usage(true);
-    	$x[] = "Memory Peak Usage: ". memory_get_peak_usage(true);
-    	$x[] = "Current User: " 	. get_current_user();
-    	$this->log(implode("\n", $x));
-    }  	
+	}
+	
+	/**
+	 * This will dump various runtime details to the log. 
+	 * @return void
+	 */
+	private function dump()
+	{
+		$x = array();
+		$x[] = "Dump Signal Recieved";
+		$x[] = "Loop Interval: " 	. $this->loop_interval;
+		$x[] = "Restart Interval: " . $this->auto_restart_interval;
+		$x[] = "Start Time: " 		. $this->start_time;
+		$x[] = "Duration: " 		. $this->runtime();
+		$x[] = "Log File: " 		. $this->log_file();
+		$x[] = "Daemon Mode: " 		. (int)$this->daemon();
+		$x[] = "Shutdown Signal: " 	. (int)$this->shutdown();
+		$x[] = "Verbose Mode: " 	. (int)$this->verbose();
+		$x[] = "Email On Error: " 	. implode(', ', $this->email_distribution_list);
+		$x[] = "Loaded Plugins: " 	. implode(', ', $this->plugins);
+		$x[] = "Memory Usage: " 	. memory_get_usage(true);
+		$x[] = "Memory Peak Usage: ". memory_get_peak_usage(true);
+		$x[] = "Current User: " 	. get_current_user();
+		$this->log(implode("\n", $x));
+	}  	
 	
 	/**
 	 * Send the $message to everybody on the $this->email_distribution_list
@@ -653,74 +653,74 @@ abstract class Core_Daemon
 		exit();
 	}	
 
-    /**
-     * Load any plugin that implements the Core_PluginInterface. 
-     * All Plugin classes must be named Core_Plugins_ClassNameHere. To select and use a plugin
-     * just provide the ClassNameHere part. It will be instantinated as $this->ClassNameHere.  
-     *  
-     * @param string $class
-     * @return void
-     * @throws Exception
-     */
-    protected function load_plugin($class)
-    {
-    	$qualified_class = ucfirst($class);
+	/**
+	 * Load any plugin that implements the Core_PluginInterface. 
+	 * All Plugin classes must be named Core_Plugins_ClassNameHere. To select and use a plugin
+	 * just provide the ClassNameHere part. It will be instantinated as $this->ClassNameHere.  
+	 *  
+	 * @param string $class
+	 * @return void
+	 * @throws Exception
+	 */
+	protected function load_plugin($class)
+	{
+		$qualified_class = ucfirst($class);
 		$qualified_class = 'Core_Plugins_' . $qualified_class;
-    	
-    	if (class_exists($qualified_class, true)) 
-    	{
-    		$interfaces = class_implements($qualified_class, true);
-    		if (is_array($interfaces) && isset($interfaces['Core_PluginInterface'])) {
-    			$this->{$class} = new $qualified_class;
-    			$this->plugins[] = $class;
-    			return;
-    		}
-    	}
-    	
-    	throw new Exception(__METHOD__ . ' Failed. Could Not Load Plugin: ' . $class);
-    }
-    
-    /**
-     * Handle command line arguments. To easily extend, just add parent::getopt at the TOP of your overloading method. 
-     * @return void
-     */
+		
+		if (class_exists($qualified_class, true)) 
+		{
+			$interfaces = class_implements($qualified_class, true);
+			if (is_array($interfaces) && isset($interfaces['Core_PluginInterface'])) {
+				$this->{$class} = new $qualified_class;
+				$this->plugins[] = $class;
+				return;
+			}
+		}
+		
+		throw new Exception(__METHOD__ . ' Failed. Could Not Load Plugin: ' . $class);
+	}
+	
+	/**
+	 * Handle command line arguments. To easily extend, just add parent::getopt at the TOP of your overloading method. 
+	 * @return void
+	 */
 	protected function getopt()
 	{
-        $opts = getopt("Hidvp:");
+		$opts = getopt("Hidvp:");
 
-        if(isset($opts["H"]))
-            $this->show_help();
-        
+		if(isset($opts["H"]))
+			$this->show_help();
 
-        if(isset($opts["i"]))
-            $this->show_install_instructions();            
-            
-        if(isset($opts['d']))
-        {			  
-        	$pid = pcntl_fork();      	
-            if($pid > 0)
+
+		if(isset($opts["i"]))
+			$this->show_install_instructions();
+
+		if(isset($opts['d']))
+		{
+			$pid = pcntl_fork();
+			if($pid > 0)
 				exit();
-            
+
 			$this->daemon = true;
-			
+
 			$this->pid = getmypid();	// We have a new pid now
 			$this->lock->pid = getmypid();
-        }
-	        
-        if(isset($opts['v']) && $this->daemon == false)
-			$this->verbose = true;
-        
+		}
+
+		if(isset($opts['v']) && $this->daemon == false)
+				$this->verbose = true;
+
 		if(isset($opts['p']))
 		{
-            $handle = @fopen($opts['p'], 'w');
-            if(!$handle)
-            	$this->show_help('Unable to write PID to ' . $opts['p']);
-            	
-			fwrite($handle, $this->pid);
-            fclose($handle);
+			$handle = @fopen($opts['p'], 'w');
+			if(!$handle)
+				$this->show_help('Unable to write PID to ' . $opts['p']);
 
-            $this->pid_file = $opts['p'];
-        }    
+			fwrite($handle, $this->pid);
+			fclose($handle);
+
+			$this->pid_file = $opts['p'];
+		}
 	}
 
 	/**
@@ -728,39 +728,39 @@ abstract class Core_Daemon
 	 * @param string $msg
 	 * @return void
 	 */
-    protected function show_help($msg = "") {
-        
-    	if($msg){
-            echo "ERROR:\n";
-            echo " ".wordwrap($msg, 72, "\n ")."\n\n";
-        }
-        
-        echo get_class($this) . "\n\n";
-        echo "USAGE:\n";
-        echo " # " . basename(self::$filename) . " -H | -i | [-d] [-v] [-p PID_FILE]\n\n";
-        echo "OPTIONS:\n";
-        echo " -i Print any daemon install instructions to the screen\n";
-        echo " -d Daemon, detach and run in the background\n";
-        echo " -v Verbose, echo any logged messages. Ignored in Daemon mode.\n";
-        echo " -H Shows this help\n";
-        echo " -p PID_FILE File to write process ID out to\n";
-        echo "\n";
-        exit();
-    }
-    
-    /**
-     * Print any install instructions to the screen. 
-     * Could be anything from copying init.d scripts, setting crontab entries, creating executable or writable directories, etc. 
-     * Add instructions from your daemon by adding them one by one: $this->install_instructions[] = 'Do foo'
-     * @return void
-     */
-    protected function show_install_instructions() {
-    	echo get_class($this) . " Installation Instructions:\n\n - ";
-    	echo implode("\n - ", $this->install_instructions);
-    	echo "\n";
-    	exit();
-    }
-    
+	protected function show_help($msg = "") {
+	
+		if($msg){
+			echo "ERROR:\n";
+			echo " ".wordwrap($msg, 72, "\n ")."\n\n";
+		}
+	
+		echo get_class($this) . "\n\n";
+		echo "USAGE:\n";
+		echo " # " . basename(self::$filename) . " -H | -i | [-d] [-v] [-p PID_FILE]\n\n";
+		echo "OPTIONS:\n";
+		echo " -i Print any daemon install instructions to the screen\n";
+		echo " -d Daemon, detach and run in the background\n";
+		echo " -v Verbose, echo any logged messages. Ignored in Daemon mode.\n";
+		echo " -H Shows this help\n";
+		echo " -p PID_FILE File to write process ID out to\n";
+		echo "\n";
+		exit();
+	}
+	
+	/**
+	 * Print any install instructions to the screen. 
+	 * Could be anything from copying init.d scripts, setting crontab entries, creating executable or writable directories, etc. 
+	 * Add instructions from your daemon by adding them one by one: $this->install_instructions[] = 'Do foo'
+	 * @return void
+	 */
+	protected function show_install_instructions() {
+		echo get_class($this) . " Installation Instructions:\n\n - ";
+		echo implode("\n - ", $this->install_instructions);
+		echo "\n";
+		exit();
+	}
+	
 	/**
 	 * Return the running time in Seconds
 	 * @return integer
@@ -768,53 +768,53 @@ abstract class Core_Daemon
 	protected function runtime()
 	{
 		return (time() - $this->start_time);
-	}    
-    
-    /**
-     * Combination getter/setter for the $shutdown property. This is needed because $this->shutdown is a private member. 
-     * @param boolean $set_value
-     */
-    protected function shutdown($set_value = null)
-    {
-    	if ($set_value === false || $set_value === true)
-    		$this->shutdown = $set_value;
-    		
-    	return $this->shutdown;
-    }
-    
-    /**
-     * Combination getter/setter for the $daemon property. This is needed because $this->daemon is a private member. 
-     * @param boolean $set_value
-     */
-    protected function daemon($set_value = null)
-    {
-    	if ($set_value === false || $set_value === true)
-    		$this->daemon = $set_value;
-    		
-    	return $this->daemon;
-    }
-    
-    /**
-     * Combination getter/setter for the $verbose property. This is needed because $this->verbose is a private member.  
-     * @param boolean $set_value
-     */
-    protected function verbose($set_value = null)
-    {
-    	if ($set_value === false || $set_value === true)
-    		$this->verbose = $set_value;
-    		
-    	return $this->verbose;
-    }
-    
-    /**
-     * Combination getter/setter for the $pid property. This is needed because $this->pid is a private member.  
-     * @param boolean $set_value
-     */
-    protected function pid($set_value = null)
-    {
-    	if (is_integer($set_value))
-    		$this->pid = $set_value;
-    		
-    	return $this->pid;
-    }   
+	}	
+	
+	/**
+	 * Combination getter/setter for the $shutdown property. This is needed because $this->shutdown is a private member. 
+	 * @param boolean $set_value
+	 */
+	protected function shutdown($set_value = null)
+	{
+		if ($set_value === false || $set_value === true)
+			$this->shutdown = $set_value;
+			
+		return $this->shutdown;
+	}
+	
+	/**
+	 * Combination getter/setter for the $daemon property. This is needed because $this->daemon is a private member. 
+	 * @param boolean $set_value
+	 */
+	protected function daemon($set_value = null)
+	{
+		if ($set_value === false || $set_value === true)
+			$this->daemon = $set_value;
+			
+		return $this->daemon;
+	}
+	
+	/**
+	 * Combination getter/setter for the $verbose property. This is needed because $this->verbose is a private member.  
+	 * @param boolean $set_value
+	 */
+	protected function verbose($set_value = null)
+	{
+		if ($set_value === false || $set_value === true)
+			$this->verbose = $set_value;
+			
+		return $this->verbose;
+	}
+	
+	/**
+	 * Combination getter/setter for the $pid property. This is needed because $this->pid is a private member.  
+	 * @param boolean $set_value
+	 */
+	protected function pid($set_value = null)
+	{
+		if (is_integer($set_value))
+			$this->pid = $set_value;
+			
+		return $this->pid;
+	}   
 }
