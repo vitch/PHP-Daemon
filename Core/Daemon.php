@@ -52,6 +52,14 @@ abstract class Core_Daemon
 	 * @var integer		The interval in Seconds
 	 */
 	protected $auto_restart_interval = 86400;
+
+	/**
+	 * Whether to automatically try to restart on a fatal error.
+	 * Override in a subclass if you don't want this behaviour (e.g. if you are running as a service and are using
+	 * an alternative method like monit to trigger restarts of your Daemon
+	 * @var bool
+	 */
+	protected $restart_on_error = TRUE;
 	
 	/**
 	 * The email accounts in this list will be notified when a fatal error occurs. 
@@ -470,7 +478,7 @@ abstract class Core_Daemon
 		// for a while, we will try to sleep for just a moment in hopes that, if an external resource caused the 
 		// error, it'll free itself. Then we try to restart. 
 		$delay = 2;
-		if (($this->runtime() + $delay) > self::MIN_RESTART_SECONDS)
+		if (($this->runtime() + $delay) > self::MIN_RESTART_SECONDS && $this->restart_on_error)
 		{
 			sleep($delay);
 			$this->restart();
