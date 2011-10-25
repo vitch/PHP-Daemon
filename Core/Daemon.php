@@ -823,15 +823,24 @@ exit $RETVAL',
     	$this->getFilename(sprintf('-d -p /var/run/%s.pid', get_class($this)))
     	);
 
-    	file_put_contents($script, $script_contents);
-    	chmod($script, 0755);
-    	
-    	if (file_exists($script) == false || is_executable($script) == false)
-    		$this->show_help("* Must Be Run as Sudo\n * Could Not Write to init.d Directory");
-    	
-    	echo "Init Scripts Created Successfully!";
-    	echo "\n - To run on startup on RedHat/CentOS:  sudo chkconfig --add {$script}";
-    	echo "\n";
+		if (file_exists('/etc/init.d')) {
+			file_put_contents($script, $script_contents);
+			chmod($script, 0755);
+
+			if (file_exists($script) == false || is_executable($script) == false)
+				$this->show_help("* Must Be Run as Sudo\n * Could Not Write to init.d Directory");
+
+			echo "Init Scripts Created Successfully!";
+			echo "\n - To run on startup on RedHat/CentOS:  sudo chkconfig --add {$script}";
+			echo "\n";
+		} else {
+			echo "Could not install to init.d as directory doesn't exist";
+			echo "\nScript contents follows:";
+			echo "\n";
+			echo "\n";
+			echo $script_contents;
+			echo "\n";
+		}
     	exit();
     }
     
